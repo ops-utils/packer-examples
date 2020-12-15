@@ -1,0 +1,63 @@
+{
+  "variables": {
+    "ubuntu_version": "20.04.1",
+    "ubuntu_version_majorminor": "20.04",
+    "ubuntu_alias": "focal"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "guest_os_type": "Ubuntu_64",
+      "iso_url": "https://releases.ubuntu.com/{{user `ubuntu_version`}}/ubuntu-{{user `ubuntu_version`}}-live-server-amd64.iso",
+      "iso_checksum": "443511f6bf12402c12503733059269a2e10dec602916c0a75263e5d990f6bb93",
+      "boot_command": [
+        "<enter><enter><f6><esc><wait>",
+        "autoinstall ds=nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/",
+        "<enter><wait>"
+      ],
+      "boot_wait": "5s",
+      "disk_size": 8192,
+      "headless": false,
+      "http_directory": "http/ubuntu/{{user `ubuntu_alias`}}",
+      "ssh_username": "ubuntu",
+      "ssh_password": "ubuntu",
+      "ssh_pty": true,
+      "ssh_timeout": "20m",
+      "ssh_handshake_attempts": "20",
+      "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "virtualbox_version_file": ".vbox_version",
+      "vm_name": "packer-xubuntu-20.04.01-amd64",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "1024"],
+        ["modifyvm", "{{.Name}}", "--cpus", "1"]
+      ]
+    },
+    {
+      "type": "amazon-ebs",
+      "ami_name": "packer-ubuntu-{{user `ubuntu_version`}}-{{user `ubuntu_alias`}}",
+      "ami_virtualization_type": "hvm",
+      "source_ami_filter": {
+        "filters": {
+          "virtualization-type": "hvm",
+          "name": "ubuntu/images/*ubuntu-{{user `ubuntu_alias`}}-{{user `ubuntu_version_majorminor`}}-amd64-server-*",
+          "root-device-type": "ebs"
+        },
+        "owners": ["099720109477"],
+        "most_recent": true
+      },
+      "instance_type": "t3.micro",
+      "ssh_username": "ubuntu"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'packer' | sudo -S bash -euo pipefail -c '{{ .Vars }} {{ .Path }}'",
+      "scripts": [
+        "scripts/ubuntu/{{user `ubuntu_alias`}}/init.sh",
+        "scripts/ubuntu/{{user `ubuntu_alias`}}/test.sh"
+      ]
+    }
+  ]
+}

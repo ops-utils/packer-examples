@@ -1,0 +1,56 @@
+{
+  "variables": {
+      "debian_version": "10.7.0",
+      "debian_alias": "buster"
+  },
+  "builders": [
+    {
+      "type": "virtualbox-iso",
+      "boot_command": [
+        "<esc><wait>",
+        "install <wait>",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg <wait>",
+        "debian-installer=en_US <wait>",
+        "auto <wait>",
+        "locale=en_US <wait>",
+        "kbd-chooser/method=us <wait>",
+        "keyboard-configuration/xkb-keymap=us <wait>",
+        "netcfg/get_hostname={{ .Name }} <wait>",
+        "netcfg/get_domain=packer <wait>",
+        "fb=false <wait>",
+        "debconf/frontend=noninteractive <wait>",
+        "console-setup/ask_detect=false <wait>",
+        "console-keymaps-at/keymap=us <wait>",
+        "<enter><wait>"
+      ],
+      "disk_size": 8192,
+      "guest_os_type": "Debian_64",
+      "headless": false,
+      "http_directory": "http/debian/{{user `debian_alias`}}",
+      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/debian-{{user `debian_version`}}-amd64-netinst.iso",
+      "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/SHA512SUMS",
+      "ssh_username": "packer",
+      "ssh_password": "packer",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "10000s",
+      "shutdown_command": "echo 'packer' | sudo -S /sbin/shutdown -hP now",
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "virtualbox_version_file": ".vbox_version",
+      "vm_name": "debian-{{user `debian_version`}}-amd64",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "1024"],
+        ["modifyvm", "{{.Name}}", "--cpus", "1"]
+      ]
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "execute_command": "echo 'packer' | sudo -S bash -euo pipefail -c '{{ .Vars }} {{ .Path }}'",
+      "scripts": [
+        "scripts/debian/{{user `debian_alias`}}/init.sh",
+        "scripts/debian/{{user `debian_alias`}}/test.sh"
+      ]
+    }
+  ]
+}
