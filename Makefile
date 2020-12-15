@@ -1,4 +1,6 @@
 SHELL := /usr/bin/env bash
 
 build:
-	set -eu; packer validate "$${manifest}" && packer build -force "$${manifest}"
+	set -eu; \
+	packer validate "$${os}"/manifest.json \
+	&& packer build -force "$${os}"/manifest.json

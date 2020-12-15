@@ -1,11 +1,14 @@
 {
   "variables": {
       "debian_version": "10.7.0",
+      "debian_version_major": "10",
       "debian_alias": "buster"
   },
   "builders": [
     {
       "type": "virtualbox-iso",
+      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/debian-{{user `debian_version`}}-amd64-netinst.iso",
+      "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/SHA512SUMS",
       "boot_command": [
         "<esc><wait>",
         "install <wait>",
@@ -23,12 +26,10 @@
         "console-keymaps-at/keymap=us <wait>",
         "<enter><wait>"
       ],
+      "http_directory": "debian{{user `debian_version_major`}}/http",
       "disk_size": 8192,
       "guest_os_type": "Debian_64",
       "headless": false,
-      "http_directory": "http/debian/{{user `debian_alias`}}",
-      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/debian-{{user `debian_version`}}-amd64-netinst.iso",
-      "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `debian_version`}}/amd64/iso-cd/SHA512SUMS",
       "ssh_username": "packer",
       "ssh_password": "packer",
       "ssh_port": 22,
@@ -48,8 +49,8 @@
       "type": "shell",
       "execute_command": "echo 'packer' | sudo -S bash -euo pipefail -c '{{ .Vars }} {{ .Path }}'",
       "scripts": [
-        "scripts/debian/{{user `debian_alias`}}/init.sh",
-        "scripts/debian/{{user `debian_alias`}}/test.sh"
+        "debian{{user `debian_version_major`}}/scripts/init.sh",
+        "debian{{user `debian_version_major`}}/scripts/test.sh"
       ]
     }
   ]
