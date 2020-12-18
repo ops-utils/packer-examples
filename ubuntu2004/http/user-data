@@ -9,11 +9,8 @@ autoinstall:
     network:
       version: 2
       ethernets:
-        ens33:
+        enp0s3:
           dhcp4: true
-  storage:
-    layout:
-      name: lvm
   identity:
     hostname: ubuntu-server
     username: ubuntu

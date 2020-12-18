@@ -1,14 +1,15 @@
 {
   "variables": {
-    "ubuntu_version": "18.04.5",
-    "ubuntu_version_majorminor": "18.04",
-    "ubuntu_alias": "bionic"
+    "os_version": "18.04.5",
+    "os_version_major": "18",
+    "os_version_minor": "04",
+    "os_alias": "bionic"
   },
   "builders": [
     {
       "type": "virtualbox-iso",
       "guest_os_type": "Ubuntu_64",
-      "iso_url": "https://releases.ubuntu.com/{{user `ubuntu_version`}}/ubuntu-{{user `ubuntu_version`}}-live-server-amd64.iso",
+      "iso_url": "https://releases.ubuntu.com/{{user `os_version`}}/ubuntu-{{user `os_version`}}-live-server-amd64.iso",
       "iso_checksum": "3756b3201007a88da35ee0957fbe6666c495fb3d8ef2e851ed2bd1115dc36446",
       "boot_wait": "3s",
       "boot_command": [
@@ -30,14 +31,14 @@
         " keyboard-configuration/variant=USA<wait>",
         " locale=en_US<wait>",
         " netcfg/get_domain=vm<wait>",
-        " netcfg/get_hostname=vagrant<wait>",
+        " netcfg/get_hostname=ubuntu<wait>",
         " grub-installer/bootdev=/dev/sda<wait>",
         " noapic<wait>",
         " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<wait>",
         " -- <wait>",
         "<enter><wait>"
       ],
-      "http_directory": "http/ubuntu/{{user `ubuntu_alias`}}",
+      "http_directory": "http/ubuntu/{{user `os_alias`}}",
       "disk_size": 8192,
       "headless": false,
       "ssh_username": "packer",
@@ -48,7 +49,7 @@
       "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "virtualbox_version_file": ".vbox_version",
-      "vm_name": "packer-ubuntu-{{user `ubuntu_version`}}-amd64",
+      "vm_name": "packer-ubuntu-{{user `os_version`}}-amd64",
       "vboxmanage": [
         ["modifyvm", "{{.Name}}", "--memory", "1024"],
         ["modifyvm", "{{.Name}}", "--cpus", "1"]
@@ -56,12 +57,12 @@
     },
     {
       "type": "amazon-ebs",
-      "ami_name": "packer-ubuntu-{{user `ubuntu_version`}}-{{user `ubuntu_alias`}}",
+      "ami_name": "packer-ubuntu-{{user `os_version`}}-{{user `os_alias`}}",
       "ami_virtualization_type": "hvm",
       "source_ami_filter": {
         "filters": {
           "virtualization-type": "hvm",
-          "name": "ubuntu/images/*ubuntu-{{user `ubuntu_alias`}}-{{user `ubuntu_version_majorminor`}}-amd64-server-*",
+          "name": "ubuntu/images/*ubuntu-{{user `os_alias`}}-{{user `os_version_major`}}.{{user `os_version_minor`}}-amd64-server-*",
           "root-device-type": "ebs"
         },
         "owners": ["099720109477"],
@@ -76,8 +77,8 @@
       "type": "shell",
       "execute_command": "echo 'packer' | sudo -S bash -euo pipefail -c '{{ .Vars }} {{ .Path }}'",
       "scripts": [
-        "scripts/ubuntu/{{user `ubuntu_alias`}}/init.sh",
-        "scripts/ubuntu/{{user `ubuntu_alias`}}/test.sh"
+        "ubuntu{{user `os_version_major`}}{{user `os_version_minor`}}/scripts/init.sh",
+        "ubuntu{{user `os_version_major`}}{{user `os_version_minor`}}/scripts/test.sh"
       ]
     }
   ]

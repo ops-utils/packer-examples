@@ -1,33 +1,49 @@
 {
   "variables": {
-    "ubuntu_version": "20.04.1",
-    "ubuntu_version_majorminor": "20.04",
-    "ubuntu_alias": "focal"
+    "os_version": "20.04.1",
+    "os_version_major": "20",
+    "os_version_minor": "04",
+    "os_alias": "focal"
   },
   "builders": [
     {
       "type": "virtualbox-iso",
+      "vm_name": "packer-ubuntu-20.04.01-amd64",
       "guest_os_type": "Ubuntu_64",
-      "iso_url": "https://releases.ubuntu.com/{{user `ubuntu_version`}}/ubuntu-{{user `ubuntu_version`}}-live-server-amd64.iso",
+      "iso_url": "https://releases.ubuntu.com/{{user `os_version`}}/ubuntu-{{user `os_version`}}-live-server-amd64.iso",
       "iso_checksum": "443511f6bf12402c12503733059269a2e10dec602916c0a75263e5d990f6bb93",
       "boot_command": [
-        "<enter><enter><f6><esc><wait>",
-        "autoinstall ds=nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/",
-        "<enter><wait>"
+        "<esc><wait><esc><wait><f6><wait><esc><wait>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "<bs><bs><bs><bs><bs><bs><bs><bs><bs><bs>",
+        "/casper/vmlinuz ",
+        "initrd=/casper/initrd ",
+        "autoinstall ",
+        "ds=nocloud-net;s=http://{{ .HTTPIP }}:{{ .HTTPPort }}/ ",
+        "--- <enter>"
       ],
       "boot_wait": "5s",
+      "cpus": 2,
+      "memory": 1024,
       "disk_size": 8192,
       "headless": false,
-      "http_directory": "http/ubuntu/{{user `ubuntu_alias`}}",
+      "floppy_files": [
+        "ubuntu{{user `os_version_major`}}{{user `os_version_minor`}}/http/user-data",
+        "ubuntu{{user `os_version_major`}}{{user `os_version_minor`}}/http/meta-data"
+      ],
+      "floppy_label": "cidata",
+      "http_directory": "ubuntu{{user `os_version_major`}}{{user `os_version_minor`}}/http",
       "ssh_username": "ubuntu",
       "ssh_password": "ubuntu",
       "ssh_pty": true,
       "ssh_timeout": "20m",
-      "ssh_handshake_attempts": "20",
+      "ssh_handshake_attempts": "100",
       "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "virtualbox_version_file": ".vbox_version",
-      "vm_name": "packer-xubuntu-20.04.01-amd64",
       "vboxmanage": [
         ["modifyvm", "{{.Name}}", "--memory", "1024"],
         ["modifyvm", "{{.Name}}", "--cpus", "1"]
@@ -35,12 +51,12 @@
     },
     {
       "type": "amazon-ebs",
-      "ami_name": "packer-ubuntu-{{user `ubuntu_version`}}-{{user `ubuntu_alias`}}",
+      "ami_name": "packer-ubuntu-{{user `os_version`}}-{{user `os_alias`}}",
       "ami_virtualization_type": "hvm",
       "source_ami_filter": {
         "filters": {
           "virtualization-type": "hvm",
-          "name": "ubuntu/images/*ubuntu-{{user `ubuntu_alias`}}-{{user `ubuntu_version_majorminor`}}-amd64-server-*",
+          "name": "ubuntu/images/*ubuntu-{{user `os_alias`}}-{{user `os_version_major`}}.{{user `os_version_minor`}}-amd64-server-*",
           "root-device-type": "ebs"
         },
         "owners": ["099720109477"],
@@ -55,8 +71,8 @@
       "type": "shell",
       "execute_command": "echo 'packer' | sudo -S bash -euo pipefail -c '{{ .Vars }} {{ .Path }}'",
       "scripts": [
-        "scripts/ubuntu/{{user `ubuntu_alias`}}/init.sh",
-        "scripts/ubuntu/{{user `ubuntu_alias`}}/test.sh"
+        "ubuntu{{user `os_version_major`}}{{user `os_version_minor`}}/scripts/init.sh",
+        "ubuntu{{user `os_version_major`}}{{user `os_version_minor`}}/scripts/test.sh"
       ]
     }
   ]

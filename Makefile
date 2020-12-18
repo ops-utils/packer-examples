@@ -1,6 +1,20 @@
 SHELL := /usr/bin/env bash
 
-build:
+ifdef only
+onlystr = -only=$(only)
+endif
+
+build: validate
 	set -eu; \
-	packer validate "$${os}"/manifest.json \
-	&& packer build -force "$${os}"/manifest.json
+	packer build \
+		-var-file "$${os}"/vars.json \
+		-force \
+		$(onlystr) \
+		-- \
+		"$${os}"/manifest.json
+
+validate:
+	set -eu; \
+	packer validate \
+		-var-file "$${os}"/vars.json \
+		"$${os}"/manifest.json
