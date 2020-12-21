@@ -1,7 +1,9 @@
 SHELL := /usr/bin/env bash
 
+# If you pass 'only=<builder>', it will get sent to the '-only=' flag for
+# 'packer build'
 ifdef only
-onlystr = -only=$(only)
+onlyflag = -only=$(only)
 endif
 
 build: validate
@@ -9,7 +11,7 @@ build: validate
 	packer build \
 		-var-file "$${os}"/vars.json \
 		-force \
-		$(onlystr) \
+		$(onlyflag) \
 		-- \
 		"$${os}"/manifest.json
 
@@ -18,3 +20,7 @@ validate:
 	packer validate \
 		-var-file "$${os}"/vars.json \
 		"$${os}"/manifest.json
+
+convert-vbox-to-raw:
+	@set -eu; \
+	vboxmanage clonemedium disk "$${disk}" "$${disk}".img --format RAW

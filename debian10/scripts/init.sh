@@ -29,7 +29,7 @@ init-python() {
 }
 
 main() {
-  update-upgrade-to-testing
+  # update-upgrade-to-testing
   init-python
 }
 
