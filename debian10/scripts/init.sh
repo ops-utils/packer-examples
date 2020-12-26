@@ -8,6 +8,8 @@ export DEBIAN_TESTING=bullseye
 export DEBIAN_FRONTEND=noninteractive
 export APT_LISTCHANGES_FRONTEND=none
 
+apt-get update
+
 update-upgrade-to-testing() {
   # Update release to Debian testing
   sed -E -i \
@@ -26,6 +28,17 @@ init-python() {
     flask \
     mypy \
     pylint
+}
+
+init-xfce4() {
+  # Install XFCE4. This should autostart the DM when you next boot
+  apt-get install -y \
+    xfce4 \
+    xfce4-goodies
+  
+  # Configure some desktop defaults
+  printf "You need to finish XFCE configuration\n" > /dev/stderr
+  return 1
 }
 
 main() {

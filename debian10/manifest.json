@@ -32,7 +32,7 @@
       "shutdown_command": "echo 'packer' | sudo -S /sbin/shutdown -hP now",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
       "virtualbox_version_file": ".vbox_version",
-      "vm_name": "debian-{{user `os_version`}}-amd64",
+      "vm_name": "packer-debian-{{user `os_version`}}-amd64",
       "vboxmanage": [
         ["modifyvm", "{{.Name}}", "--memory", "1024"],
         ["modifyvm", "{{.Name}}", "--cpus", "1"]
@@ -67,6 +67,16 @@
       "environment_vars": [
         "a=1"
       ]
+    }
+  ],
+  "post-processors": [
+    {
+      "type": "shell-local",
+      "script": "./debian{{user `os_version_major`}}/scripts/post-processor.sh",
+      "environment_vars": [
+        "vmname=debian-{{user `os_version`}}-amd64"
+      ],
+      "only": ["virtualbox-iso"]
     }
   ]
 }
