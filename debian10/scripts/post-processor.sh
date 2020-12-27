@@ -34,4 +34,4 @@ main() {
   create-vbox-vm || delete-vbox-vm
 }
 
-main
+# main
