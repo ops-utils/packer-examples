@@ -25,6 +25,13 @@ convert-vbox-to-raw-img:
 	@set -eu; \
 	vboxmanage clonemedium disk --format RAW "$${disk}" "$${disk}".img
 
+run-qemu:
+	set -eu; \
+	qemu-system-x86_64 \
+		-drive file="$${disk}" \
+		-smp cpus=4 \
+		-m size=1024
+
 write-to-device:
 	@printf "\nYou can write the .img created with the 'convert-vbox-to-raw' target to a \n" > /dev/stderr
 	@printf "physical disk by running (for example) the 'dd' or 'pv' tools: \n\n" > /dev/stderr

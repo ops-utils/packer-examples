@@ -1,6 +1,44 @@
 {
   "builders": [
     {
+      "type": "qemu",
+      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/debian-{{user `os_version`}}-amd64-netinst.iso",
+      "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/SHA512SUMS",
+      "disk_size": 4096,
+
+      "boot_command": [
+        "<esc><wait>",
+        "install ",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg ",
+        "debian-installer=en_US ",
+        "auto ",
+        "locale=en_US ",
+        "kbd-chooser/method=us ",
+        "keyboard-configuration/xkb-keymap=us ",
+        "netcfg/get_hostname={{ .Name }} ",
+        "netcfg/get_domain=packer ",
+        "fb=false ",
+        "debconf/frontend=noninteractive ",
+        "console-setup/ask_detect=false ",
+        "console-keymaps-at/keymap=us ",
+        "<enter>"
+      ],
+      "boot_wait": "3s",
+
+      "disk_interface": "virtio-scsi",
+      
+      "http_directory": "debian{{user `os_version_major`}}/http",
+      "cpus": 2,
+      "memory": 1024,
+      "headless": false,
+      "ssh_username": "packer",
+      "ssh_password": "packer",
+      "ssh_port": 22,
+      "ssh_wait_timeout": "20m",
+      "shutdown_command": "echo 'packer' | sudo -S /sbin/shutdown -hP now",
+      "vm_name": "packer-debian-{{user `os_version`}}-amd64"
+    },
+    {
       "type": "virtualbox-iso",
       "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/debian-{{user `os_version`}}-amd64-netinst.iso",
       "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/SHA512SUMS",

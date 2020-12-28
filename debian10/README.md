@@ -12,6 +12,10 @@ like to get the `amazon-ebssurrogate` builder working (I can't get the AMI to
 boot), so that if the Debian team ever stops publishing AMIs then the OS would
 still be buildable, but it's working now, so.
 
+The `qemu` builder has `"disk_interface": "virtio-scsi"` instead of the default
+`virtio`, because the `grub` install can't seem to find `/dev/sda` on my laptop.
+Not sure about other machines just yet.
+
 `make build` expects a file named `vars.json` to be in this directory -- there
 is not one here now, to prevent committing potentiall-sensitive data. Be sure to
 add one if you use the Make targets!
