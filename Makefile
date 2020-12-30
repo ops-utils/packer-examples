@@ -25,12 +25,23 @@ convert-vbox-to-raw-img:
 	@set -eu; \
 	vboxmanage clonemedium disk --format RAW "$${disk}" "$${disk}".img
 
-run-qemu:
+# Some of these flags need to be set explicitly here; e.g.:
+#
+# * if RAM is too low you get a kernel panic on boot
+#
+# * QEMU should know how to handle user-mode networking automatically, but I've
+#   had to set the netdev manually to the same that Packer uses at build time
+start-qemu:
 	set -eu; \
 	qemu-system-x86_64 \
 		-drive file="$${disk}" \
-		-smp cpus=4 \
-		-m size=1024
+		-smp cpus=2 \
+		-m size=2048 \
+		-device VGA,vgamem_mb=128 \
+		-enable-kvm
+# Still trying to get the following to work:
+# -netdev user,id=user.0 -device virtio-net,netdev=user.0 \
+# -device virtio-net,netdev=network0 -netdev tap,id=network0,ifname=tap0,script=no,downscript=no,vhost=on \
 
 write-to-device:
 	@printf "\nYou can write the .img created with the 'convert-vbox-to-raw' target to a \n" > /dev/stderr

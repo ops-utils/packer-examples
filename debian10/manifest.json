@@ -4,7 +4,7 @@
       "type": "qemu",
       "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/debian-{{user `os_version`}}-amd64-netinst.iso",
       "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/SHA512SUMS",
-      "disk_size": 4096,
+      "disk_size": 16384,
 
       "boot_command": [
         "<esc><wait>",
@@ -103,7 +103,7 @@
         "debian{{user `os_version_major`}}/scripts/test.sh"
       ],
       "environment_vars": [
-        "a=1"
+        "example=1"
       ]
     }
   ],
