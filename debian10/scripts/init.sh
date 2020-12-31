@@ -43,6 +43,7 @@ init-sys-packages() {
     build-essential \
     ca-certificates \
     curl \
+    gcc \
     gdebi \
     git \
     gnupg-agent \
@@ -50,7 +51,9 @@ init-sys-packages() {
     make \
     nano \
     nmap \
+    perl \
     software-properties-common \
+    tmux \
     unzip \
     wget \
     zip
@@ -138,6 +141,7 @@ init-msft() {
   printf "\nInstalling Microsoft stuff...\n\n" > /dev/stderr && sleep 3
   curl -fsSL -o vscode.deb 'https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64'
   gdebi -n vscode.deb && rm vscode.deb
+  sed -i 's/,arm64,armhf//g' /etc/apt/sources.list.d/vscode.list
   apt-wipe
 }
 
@@ -157,12 +161,6 @@ init-firefox() {
   apt-wipe
 }
 
-init-qemu-network-interface() {
-  # QEMU specifically seems to use a different interface (ens4) during build vs.
-  # what's available (ens3) afterwards, so fix that here
-  printf "\nauto ens3\nallow-hotplug ens3\niface ens3 inet dhcp\n" >> /etc/network/interfaces
-}
-
 main() {
   # upgrade-to-testing
   upgrade-to-unstable
@@ -174,7 +172,6 @@ main() {
   init-docker
   init-msft
   init-aws
-  init-qemu-network-interface
 }
 
 main

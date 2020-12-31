@@ -1,11 +1,6 @@
 {
   "builders": [
     {
-      "type": "qemu",
-      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/debian-{{user `os_version`}}-amd64-netinst.iso",
-      "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/SHA512SUMS",
-      "disk_size": 16384,
-
       "boot_command": [
         "<esc><wait>",
         "install ",
@@ -24,24 +19,23 @@
         "<enter>"
       ],
       "boot_wait": "3s",
-
-      "disk_interface": "virtio-scsi",
-      
-      "http_directory": "debian{{user `os_version_major`}}/http",
       "cpus": 2,
-      "memory": 1024,
+      "disk_interface": "virtio-scsi",
+      "disk_size": 16384,
       "headless": false,
-      "ssh_username": "packer",
+      "http_directory": "debian{{user `os_version_major`}}/http",
+      "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/SHA512SUMS",
+      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/debian-{{user `os_version`}}-amd64-netinst.iso",
+      "memory": 1024,
+      "shutdown_command": "echo 'packer' | sudo -S shutdown -P now",
       "ssh_password": "packer",
       "ssh_port": 22,
+      "ssh_username": "packer",
       "ssh_wait_timeout": "20m",
-      "shutdown_command": "echo 'packer' | sudo -S /sbin/shutdown -hP now",
+      "type": "qemu",
       "vm_name": "packer-debian-{{user `os_version`}}-amd64"
     },
     {
-      "type": "virtualbox-iso",
-      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/debian-{{user `os_version`}}-amd64-netinst.iso",
-      "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/SHA512SUMS",
       "boot_command": [
         "<esc><wait>",
         "install ",
@@ -59,27 +53,30 @@
         "console-keymaps-at/keymap=us ",
         "<enter>"
       ],
-      "http_directory": "debian{{user `os_version_major`}}/http",
-      "disk_size": 4096,
+      "disk_size": 16384,
       "guest_os_type": "Debian_64",
+      "http_directory": "debian{{user `os_version_major`}}/http",
+      "iso_checksum": "file:http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/SHA512SUMS",
+      "iso_url": "http://cdimage.debian.org/cdimage/release/{{user `os_version`}}/amd64/iso-cd/debian-{{user `os_version`}}-amd64-netinst.iso",
       "headless": false,
-      "ssh_username": "packer",
       "ssh_password": "packer",
       "ssh_port": 22,
+      "ssh_username": "packer",
       "ssh_wait_timeout": "20m",
       "shutdown_command": "echo 'packer' | sudo -S /sbin/shutdown -hP now",
       "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
-      "virtualbox_version_file": ".vbox_version",
-      "vm_name": "packer-debian-{{user `os_version`}}-amd64",
+      "type": "virtualbox-iso",
       "vboxmanage": [
-        ["modifyvm", "{{.Name}}", "--memory", "1024"],
-        ["modifyvm", "{{.Name}}", "--cpus", "1"]
-      ]
-    },
+        ["modifyvm", "{{.Name}}", "--memory", "2048"],
+        ["modifyvm", "{{.Name}}", "--cpus", "2"]
+      ],
+      "virtualbox_version_file": ".vbox_version",
+      "vm_name": "packer-debian-{{user `os_version`}}-amd64"
+    }, 
     {
-      "type": "amazon-ebs",
       "ami_name": "packer-debian-{{user `os_version`}}-{{user `os_alias`}}",
       "ami_virtualization_type": "hvm",
+      "instance_type": "t3.micro",
       "source_ami_filter": {
         "filters": {
           "virtualization-type": "hvm",
@@ -89,9 +86,11 @@
         "owners": ["136693071363"],
         "most_recent": true
       },
-      "instance_type": "t3.micro",
-      "temporary_security_group_source_cidrs": ["{{user `temp_src_cidr`}}"],
-      "ssh_username": "admin"
+      "ssh_username": "admin",
+      "temporary_security_group_source_cidrs": [
+        "{{user `temp_src_cidr`}}"
+      ],
+      "type": "amazon-ebs"
     }
   ],
   "provisioners": [
@@ -105,16 +104,21 @@
       "environment_vars": [
         "example=1"
       ]
-    }
-  ],
-  "post-processors": [
+    },
     {
-      "type": "shell-local",
-      "script": "./debian{{user `os_version_major`}}/scripts/post-processor.sh",
-      "environment_vars": [
-        "vmname=debian-{{user `os_version`}}-amd64"
+      "type": "file",
+      "source": "debian{{user `os_version_major`}}/scripts/set-iface.sh",
+      "destination": "/tmp/set-iface.sh",
+      "only": ["virtualbox-iso", "qemu"]
+    },
+    {
+      "type": "shell",
+      "execute_command": "echo 'packer' | sudo -S bash -euo pipefail -c '{{ .Vars }} {{ .Path }}'",
+      "inline": [
+        "cp /tmp/set-iface.sh /usr/local/bin/set-iface.sh",
+        "bash /usr/local/bin/set-iface.sh"
       ],
-      "only": ["virtualbox-iso"]
+      "only": ["virtualbox-iso", "qemu"]
     }
   ]
 }
